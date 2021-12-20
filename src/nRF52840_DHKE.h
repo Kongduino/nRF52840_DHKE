@@ -54,6 +54,8 @@ class nrf52_DHKE_Set {
     bool begin();
     int encrypt(char *, uint16_t, char *, BigKey);
     int decrypt(char *, uint16_t, char *, BigKey);
+    int encrypt(uint8_t*, char *, uint16_t, char *, BigKey);
+    int decrypt(uint8_t*, char *, uint16_t, char *, BigKey);
     BigKey getPub();
     BigKey getPvt();
   private:
@@ -91,6 +93,24 @@ int nrf52_DHKE_Set::decrypt(char *pDataIn, uint16_t msgLen, char *pDataOut, BigK
   SecretKey.twoWords[0] = power(BobPublic.twoWords[0], PV.twoWords[0]);
   SecretKey.twoWords[1] = power(BobPublic.twoWords[1], PV.twoWords[1]);
   int err = aes.Process(pDataIn, msgLen, myIV, SecretKey.oneChunk, 16, pDataOut, aes.decryptFlag, aes.ecbMode);
+  return err;
+}
+
+int nrf52_DHKE_Set::encrypt(uint8_t *myIV, char *pDataIn, uint16_t msgLen, char *pDataOut, BigKey BobPublic) {
+  uint8_t i;
+  BigKey PV = pvtKey.getKey();
+  SecretKey.twoWords[0] = power(BobPublic.twoWords[0], PV.twoWords[0]);
+  SecretKey.twoWords[1] = power(BobPublic.twoWords[1], PV.twoWords[1]);
+  int err = aes.Process(pDataIn, msgLen, myIV, SecretKey.oneChunk, 16, pDataOut, aes.encryptFlag, aes.cbcMode);
+  return err;
+}
+
+int nrf52_DHKE_Set::decrypt(uint8_t *myIV, char *pDataIn, uint16_t msgLen, char *pDataOut, BigKey BobPublic) {
+  uint8_t i;
+  BigKey PV = pvtKey.getKey();
+  SecretKey.twoWords[0] = power(BobPublic.twoWords[0], PV.twoWords[0]);
+  SecretKey.twoWords[1] = power(BobPublic.twoWords[1], PV.twoWords[1]);
+  int err = aes.Process(pDataIn, msgLen, myIV, SecretKey.oneChunk, 16, pDataOut, aes.decryptFlag, aes.cbcMode);
   return err;
 }
 

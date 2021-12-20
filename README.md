@@ -35,3 +35,30 @@ Bob can decrypt the message, with `AlicePub`:
     return;
   }
 ```
+
+This uses ECB. If you want the more secure CBC, add a 16-byte IV to the function call:
+
+```c
+  uint8_t myIV[16];
+  nRFCrypto.Random.generate(myIV, 16); // Keep in mind Bob should have a copy of that
+  // You need to transmit IV and cipher.
+  err = Alice.encrypt(myIV, pDataIn, msgLen, pDataOut, Bob.getPub());
+  if (err == 0) {
+    hexDump(pDataOut, msgLen);
+  } else {
+    Serial.println("Encryption error: " + String(err));
+    return;
+  }
+```
+
+Decryption:
+
+```c
+  int err = Bob.decrypt(myIV, msg, msgLen, plainText, AlicePub);
+  if (err == 0) {
+    hexDump(plainText, msgLen);
+  } else {
+    Serial.println("Encryption error: " + String(err));
+    return;
+  }
+```
